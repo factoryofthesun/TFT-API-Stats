@@ -4,6 +4,7 @@ import requests
 from datetime import datetime
 import json
 import time
+from config import PATH_GDRIVE_MAIN_DIR
 
 API_KEY = os.environ.get("API_KEY")
 API_KEY_SUFFIX = '?api_key=' + API_KEY
@@ -173,9 +174,14 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                     pass
                 fail_count = 0
                 match_details = match_detail_response.json()
-                #TODO: RECORD MATCH DETAILS IN A SYSTEMATIC WAY
-
-
+                #Add relevant metadata to JSON: summoner name, id, patch, etc
+                match_details["metadata"]['summoner_id'] = summonerID
+                match_details["metadata"]['puuid'] = puuid
+                match_details["metadata"]['summoner_name']  = summoner_dict['name']
+                #Save match data as its own JSON file
+                json_file_name = PATH_GDRIVE_MAIN_DIR + '/Match JSON/' + match_id_prefix + '.json'
+                with open(json_file_name, 'w') as fp:
+                    json.dump(match_details, fp)
 
 
 
