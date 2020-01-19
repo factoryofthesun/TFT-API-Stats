@@ -128,6 +128,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 if fail_count >= 5:
                     raise SystemExit("ERROR: API request failed 5 times in a row.")
                 wait_time = float(summoner_response.headers['Retry-After'])
+                print("WARNING: Rate Limit Exceeded...retrying request after {} seconds".format(wait_time))
                 time.sleep(wait_time)
                 summoner_response = requests.get('https://' + platform_link + summoner_prefix + API_KEY_SUFFIX)
             code_response = processReturnCodes(summoner_response.status_code)
@@ -149,6 +150,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 if fail_count >= 5:
                     raise SystemExit("ERROR: API request failed 5 times in a row.")
                 wait_time = float(match_response.headers['Retry-After'])
+                print("WARNING: Rate Limit Exceeded...retrying request after {} seconds".format(wait_time))
                 time.sleep(wait_time)
                 match_response = requests.get('https://' + region_link + matches_prefix + API_KEY_SUFFIX)
             code_response = processReturnCodes(match_response.status_code)
@@ -169,6 +171,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                         raise SystemExit("ERROR: API request failed 5 times in a row.")
                     wait_time = float(match_detail_response.headers['Retry-After'])
                     time.sleep(wait_time)
+                    print("WARNING: Rate Limit Exceeded...retrying request after {} seconds".format(wait_time))
                     match_detail_response = requests.get("https://" + region_link + match_id_prefix + API_KEY_SUFFIX)
                 code_response = processReturnCodes(match_detail_response.status_code)
                 if not code_response:
@@ -183,7 +186,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 match_details["metadata"]['puuid'] = puuid
                 match_details["metadata"]['summoner_name']  = summoner_dict['name']
                 #Save match data as its own JSON file
-                json_file_name = PATH_GDRIVE_MAIN_DIR + '/Match JSON/' + match_id_prefix + '.json'
+                json_file_name = PATH_GDRIVE_MAIN_DIR + '/Match JSON/' + match_id + '.json'
                 with open(json_file_name, 'w') as fp:
                     json.dump(match_details, fp)
                 print("Saved {} successfully.".format(json_file_name))
