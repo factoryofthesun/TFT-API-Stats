@@ -40,7 +40,7 @@ tft_league_dict = {'Challenger':tft_league_prefix+'challenger',
                 'League Entries': tft_league_prefix + 'entries/{tier}/{division}',
                 }
 tft_match_dict = {'Matches from PUUID':tft_match_prefix + 'by-puuid/{}/ids',
-                    'Match ID Details':tft_match_prefix + 'matches/{}'}
+                    'Match ID Details':tft_match_prefix + '{}'}
 tft_summoner_dict = {'Account ID': tft_summoner_prefix + 'by-account/{}',
                     'Summoner Name':tft_summoner_prefix + 'by-name/{}',
                     'PUUID':tft_summoner_prefix + 'by-puuid/{}',
