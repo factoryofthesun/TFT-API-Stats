@@ -173,7 +173,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                     pass
                 fail_count = 0
                 match_details = match_detail_response.json()
-                #TODO: RECORD MATCH DETAILS IN A SYSTEMATIC WAY 
+                #TODO: RECORD MATCH DETAILS IN A SYSTEMATIC WAY
 
 
 
