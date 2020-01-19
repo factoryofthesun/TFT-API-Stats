@@ -112,7 +112,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 raise SystemExit("ERROR: API request failed 5 times in a row.")
             pass
         fail_count = 0
-        tier_dict = json.loads(tier_response)
+        tier_dict = tier_response.json()
         tier_dict_entries = tier_dict['entries']
         #Get every PUUID for every summonerID
         for entry in tier_dict['entries']:
@@ -133,10 +133,10 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                     raise SystemExit("ERROR: API request failed 5 times in a row.")
                 pass
             fail_count = 0
-            summoner_dict = json.loads(summoner_response)
-            puuid = summoner_response['puuid']
+            summoner_dict = summoner_response.json()
+            puuid = summoner_dict['puuid']
             #Get every match ID from PUUID - gotta use regional routing values
-            region_link = REGIONAL_DICT['region']
+            region_link = REGIONAL_DICT[region]
             matches_prefix = tft_match_dict['Matches from PUUID'].format(puuid)
             match_response = requests.get('https://' + region_link + matches_prefix + API_KEY_SUFFIX)
             while match_response.status_code == 429:
@@ -153,7 +153,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                     raise SystemExit("ERROR: API request failed 5 times in a row.")
                 pass
             fail_count = 0
-            match_list = json.loads(match_response)
+            match_list = match_response.json()
             #Run through match ids and get details
             for match_id in match_list:
                 match_id_prefix = tft_match_dict['Match ID Details'].format(match_id)
@@ -172,7 +172,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                         raise SystemExit("ERROR: API request failed 5 times in a row.")
                     pass
                 fail_count = 0
-                match_details = json.loads(match_response)
+                match_details = match_response.json()
                 #TODO: RECORD MATCH DETAILS IN A SYSTEMATIC WAY 
 
 
