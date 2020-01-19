@@ -98,12 +98,14 @@ for platform_key, platform_link in PLATFORM_DICT.items():
     else:
         raise SystemExit("ERROR: Platform key {} not found in any region.".format(platform_key))
     for tier in tiers:
+        print('API tier call: https://' + platform_link + tft_league_dict[tier] + API_KEY_SUFFIX)
         tier_response = requests.get('https://' + platform_link + tft_league_dict[tier] + API_KEY_SUFFIX)
         while tier_response.status_code == 429:
             fail_count += 1
             if fail_count >= 5:
                 raise SystemExit("ERROR: API request failed 5 times in a row.")
             wait_time = float(tier_response.headers['Retry-After'])
+            print("WARNING: Rate Limit Exceeded...retrying request after {} seconds".format(wait_time))
             time.sleep(wait_time)
             tier_response = requests.get('https://' + platform_link + tft_league_dict[tier] + API_KEY_SUFFIX)
         code_response = processReturnCodes(tier_response.status_code)
@@ -119,6 +121,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
         for entry in tier_dict['entries']:
             summonerID = entry['summonerId']
             summoner_prefix = tft_summoner_dict['Summoner ID'].format(summonerID)
+            print('API Summoner Call: https://' + platform_link + summoner_prefix + API_KEY_SUFFIX)
             summoner_response = requests.get('https://' + platform_link + summoner_prefix + API_KEY_SUFFIX)
             while summoner_response.status_code == 429:
                 fail_count += 1
@@ -139,6 +142,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
             #Get every match ID from PUUID - gotta use regional routing values
             region_link = REGIONAL_DICT[region]
             matches_prefix = tft_match_dict['Matches from PUUID'].format(puuid)
+            print('API Match List call: https://' + region_link + matches_prefix + API_KEY_SUFFIX)
             match_response = requests.get('https://' + region_link + matches_prefix + API_KEY_SUFFIX)
             while match_response.status_code == 429:
                 fail_count += 1
@@ -182,7 +186,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 json_file_name = PATH_GDRIVE_MAIN_DIR + '/Match JSON/' + match_id_prefix + '.json'
                 with open(json_file_name, 'w') as fp:
                     json.dump(match_details, fp)
-
+                print("Saved {} successfully.".format(json_file_name))
 
 
 #Expansion: collect all high level player match history data across all regions
