@@ -47,6 +47,8 @@ tft_summoner_dict = {'Account ID': tft_summoner_prefix + 'by-account/{}',
                     'PUUID':tft_summoner_prefix + 'by-puuid/{}',
                     'Summoner ID':tft_summoner_prefix + '{}'}
 
+existing_match_ids = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'match_ids.csv')['Match IDs'].tolist()
+
 #Keep in mind: Rate limits - make sure to count and set sleep pauses if necessary
 def processReturnCodes(code):
     if code == 200:
@@ -159,6 +161,9 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 continue
             fail_count = 0
             match_list = match_response.json()
+            match_list = [i for i in match_list if i not in existing_match_ids]
+            if not match_list:
+                continue 
             #Run through match ids and get details
             for match_id in match_list:
                 match_id_prefix = tft_match_dict['Match ID Details'].format(match_id)
