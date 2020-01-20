@@ -152,7 +152,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 wait_time = float(match_response.headers['Retry-After'])
                 print("WARNING: Rate Limit Exceeded...retrying request after {} seconds".format(wait_time))
                 time.sleep(wait_time)
-                match_response = requests.get('https://' + region_link + matches_prefix + API_KEY_SUFFIX)
+                match_response = requests.get('https://' + region_link + matches_prefix + '?count=200&api_key=' + API_KEY)
             code_response = processReturnCodes(match_response.status_code)
             if not code_response:
                 fail_count += 1
