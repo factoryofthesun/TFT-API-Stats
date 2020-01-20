@@ -163,7 +163,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
             match_list = match_response.json()
             match_list = [i for i in match_list if i not in existing_match_ids]
             if not match_list:
-                continue 
+                continue
             #Run through match ids and get details
             for match_id in match_list:
                 match_id_prefix = tft_match_dict['Match ID Details'].format(match_id)
@@ -193,3 +193,4 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 with open(json_file_name, 'w') as fp:
                     json.dump(match_details, fp)
                 print("Saved {} successfully.".format(json_file_name))
+    print("Region {} completed.".format(region))
