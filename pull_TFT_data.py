@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 import json
 import time
-from config import PATH_GDRIVE_MAIN_DIR
+from config import PATH_GDRIVE_MAIN_DIR, PATH_GDRIVE_JSON_DIR
 
 API_KEY = os.environ.get("API_KEY")
 API_KEY_SUFFIX = '?api_key=' + API_KEY
@@ -46,9 +46,7 @@ tft_summoner_dict = {'Account ID': tft_summoner_prefix + 'by-account/{}',
                     'Summoner Name':tft_summoner_prefix + 'by-name/{}',
                     'PUUID':tft_summoner_prefix + 'by-puuid/{}',
                     'Summoner ID':tft_summoner_prefix + '{}'}
-#Initial outline: get all NA challenger players with tft-league api, get all PUUIDs with
-#tft-summoner api, get all match data with tft-match api
-#TODO: Can you batch request match history data? Specify time period of matches to get?
+
 #Keep in mind: Rate limits - make sure to count and set sleep pauses if necessary
 def processReturnCodes(code):
     if code == 200:
@@ -136,7 +134,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 fail_count += 1
                 if fail_count >= 5:
                     raise SystemExit("ERROR: API request failed 5 times in a row.")
-                pass
+                continue
             fail_count = 0
             summoner_dict = summoner_response.json()
             puuid = summoner_dict['puuid']
@@ -158,7 +156,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 fail_count += 1
                 if fail_count >= 5:
                     raise SystemExit("ERROR: API request failed 5 times in a row.")
-                pass
+                continue
             fail_count = 0
             match_list = match_response.json()
             #Run through match ids and get details
@@ -170,15 +168,15 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                     if fail_count >= 5:
                         raise SystemExit("ERROR: API request failed 5 times in a row.")
                     wait_time = float(match_detail_response.headers['Retry-After'])
-                    time.sleep(wait_time)
                     print("WARNING: Rate Limit Exceeded...retrying request after {} seconds".format(wait_time))
+                    time.sleep(wait_time)
                     match_detail_response = requests.get("https://" + region_link + match_id_prefix + API_KEY_SUFFIX)
                 code_response = processReturnCodes(match_detail_response.status_code)
                 if not code_response:
                     fail_count += 1
                     if fail_count >= 5:
                         raise SystemExit("ERROR: API request failed 5 times in a row.")
-                    pass
+                    continue
                 fail_count = 0
                 match_details = match_detail_response.json()
                 #Add relevant metadata to JSON: summoner name, id, patch, etc
@@ -186,11 +184,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 match_details["metadata"]['puuid'] = puuid
                 match_details["metadata"]['summoner_name']  = summoner_dict['name']
                 #Save match data as its own JSON file
-                json_file_name = PATH_GDRIVE_MAIN_DIR + '/Match JSON/' + match_id + '.json'
+                json_file_name = PATH_GDRIVE_JSON_DIR + match_id + '.json'
                 with open(json_file_name, 'w') as fp:
                     json.dump(match_details, fp)
                 print("Saved {} successfully.".format(json_file_name))
-
-
-#Expansion: collect all high level player match history data across all regions
-#Side visualization project: create infographic of the meta comps by region if significantly different
