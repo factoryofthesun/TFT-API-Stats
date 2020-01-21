@@ -89,6 +89,9 @@ platform_matchids = {}
 
 fail_count = 0
 for platform_key, platform_link in PLATFORM_DICT.items():
+    #Ad Hoc way to skip finished regions while the script is still crashing
+    if platform_key in ['BR1', 'EUN1']:
+        continue
     if platform_key in AMERICAS_PLATFORMS:
         region = 'AMERICAS'
     elif platform_key in ASIA_PLATFORMS:
@@ -193,4 +196,4 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 with open(json_file_name, 'w') as fp:
                     json.dump(match_details, fp)
                 print("Saved {} successfully.".format(json_file_name))
-    print("Region {} completed.".format(region))
+    print("Region {} completed.".format(platform_key))
