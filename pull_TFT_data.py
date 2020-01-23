@@ -90,7 +90,7 @@ platform_matchids = {}
 fail_count = 0
 for platform_key, platform_link in PLATFORM_DICT.items():
     #Ad Hoc way to skip finished regions while the script is still crashing
-    if platform_key in ['BR1', 'EUN1']:
+    if platform_key in ['BR1', 'EUN1', 'EUW1', 'JP1', 'KR']:
         continue
     if platform_key in AMERICAS_PLATFORMS:
         region = 'AMERICAS'
@@ -155,7 +155,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 wait_time = float(match_response.headers['Retry-After'])
                 print("WARNING: Rate Limit Exceeded...retrying request after {} seconds".format(wait_time))
                 time.sleep(wait_time)
-                match_response = requests.get('https://' + region_link + matches_prefix + '?count=200&api_key=' + API_KEY)
+                match_response = requests.get('https://' + region_link + matches_prefix + '?count=100&api_key=' + API_KEY)
             code_response = processReturnCodes(match_response.status_code)
             if not code_response:
                 fail_count += 1
