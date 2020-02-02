@@ -20,14 +20,14 @@ from config import PATH_GDRIVE_MAIN_DIR
 warnings.filterwarnings('ignore', category=FutureWarning)
 
 # TODO: replace with actual number
-NUM_UNIQUE_TRAITS = 28
+NUM_UNIQUE_TRAITS = 27
 
 #########################################################################
 # Extract data and separate data into groups (training, test, validation)
 #########################################################################
 
 # Contains top 2 (1st and 2nd place) trait compositions from each match
-top_2_df = pd.read_csv("")
+top_2_df = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'trait_compositions_first_and_second.csv')
 
 # For each match ID, take the difference between trait tiers of 1st place minus 2nd place. We will shuffle
 # the 1st/2nd order in the next step.
