@@ -90,7 +90,7 @@ platform_matchids = {}
 fail_count = 0
 for platform_key, platform_link in PLATFORM_DICT.items():
     #Ad Hoc way to skip finished regions while the script is still crashing
-    if platform_key in ['BR1', 'EUN1', 'EUW1', 'JP1', 'KR', 'LA1', 'LA2']:
+    if platform_key in ['BR1', 'EUN1', 'EUW1', 'JP1', 'KR', 'LA1', 'LA2', 'NA1', 'OC1', 'TR1']:
         continue
     if platform_key in AMERICAS_PLATFORMS:
         region = 'AMERICAS'

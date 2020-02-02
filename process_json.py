@@ -16,7 +16,7 @@ def processMatchJson(match_data, gameid):
     game_version = match_data['info']['game_version']
     region = gameid.split('_')[0]
     for partic in match_data['info']['participants']:
-        #TODO: How to assign items efficiently?
+        #TODO: ASSIGN ITEMS TO CHAMPIONS
         puuid = partic['puuid']
         place = partic['placement']
         #Sort lists for easiser comparison in CSV ouput
