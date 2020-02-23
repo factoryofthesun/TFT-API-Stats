@@ -1,8 +1,7 @@
 
-import pandas as pd
 import numpy as np
-from datetime import datetime
-from config import PATH_GDRIVE_MAIN_DIR, PATH_GDRIVE_JSON_DIR
+import pandas as pd
+from config import PATH_GDRIVE_MAIN_DIR
 
 """
 
@@ -42,10 +41,13 @@ set2summ = summ_df.loc[(summ_df['Game Date'] >= set2_date) & (summ_df['Place'].i
 #Convert traits column into lists
 set2summ['Traits'] = set2summ.Traits.apply(lambda x: x[1:-1].split(','))
 
+# TODO: Remove single quotes around the original list of traits and remove preceding spaces to some of the traits in
+# TODO: the list.
+
 #Collapse list of traits into individual rows
-set2long = pd.DataFrame({col:np.repeat(set2summ[col].values, set2summ['Traits'].str.len())
+set2long = pd.DataFrame({col: np.repeat(set2summ[col].values, set2summ['Traits'].str.len())
                         for col in set2summ.columns.drop('Traits')}).\
-                        assign(**{'Traits':np.concatenate(set2summ['Traits'].values)})[set2summ.columns]
+                        assign(**{'Traits': np.concatenate(set2summ['Traits'].values)})[set2summ.columns]
 
 #Split out traits into trait name and tier
 set2long['Traits'] = set2long['Traits'].str.replace('Set2', '') #Remove Set2 substring to simplify the regex
@@ -60,6 +62,8 @@ set2wide.index.name = set2wide.columns.name = None
 
 #Sort by gameid, then place
 set2wide.sort_values(by = ['GameID', 'Place'], inplace = True)
+
+# TODO: Assign empty cell values to 0 for data analysis purposes later
 
 # Output the summary dataframe to a .csv file titled "trait_compositions_first_and_second.csv"
 set2wide.to_csv(PATH_GDRIVE_MAIN_DIR + "trait_compositions_first_and_second.csv", index = False)
