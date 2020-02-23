@@ -19,8 +19,9 @@ from config import PATH_GDRIVE_MAIN_DIR
 
 warnings.filterwarnings('ignore', category=FutureWarning)
 
-# TODO: replace with actual number
-NUM_UNIQUE_TRAITS = 27
+TRAITS_LIST = ["Alchemist", "Assassin", "Avatar", "Berserker", "Blademaster", "Crystal", "Desert", "Druid", "Electric",
+               "Glacial", "Inferno", "Light", "Lunar", "Mage", "Mountain", "Mystic", "Ocean", "Poison", "Predator",
+               "Ranger", "Shadow", "Soulbound", "Steel", "Summoner", "Warden",  "Wind", "Woodland"]
 
 #########################################################################
 # Extract data and separate data into groups (training, test, validation)
@@ -31,7 +32,9 @@ top_2_df = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'trait_compositions_first_and_seco
 
 # For each match ID, take the difference between trait tiers of 1st place minus 2nd place. We will shuffle
 # the 1st/2nd order in the next step.
-
+# Will use the split-apply-combine method for pandas array. First, we negate the tier values of 2nd place player
+for trait_name in TRAITS_LIST:
+    top_2_df[top_2_df["Place"] == 2][trait_name] = -top_2_df[top_2_df["Place"] == 2][trait_name]
 
 # Create a randomized array of y-labels (either 1 or 2), and negate the differences accordingly
 
@@ -57,53 +60,53 @@ top_2_df = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'trait_compositions_first_and_seco
 # Run neural net predictor
 ################
 
-# TODO: do we even need to run this pre-processing?
-def preprocess(x, y):
-    x = tf.cast(x, tf.int64)
-    y = tf.cast(y, tf.int64)
-    return x, y
-
-
-def create_dataset(xs, ys, n_classes, batch_size=20):
-    ys = tf.one_hot(ys, depth=n_classes)
-    return tf.data.Dataset.from_tensor_slices((xs, ys)).map(preprocess).shuffle(ys.shape[0]).batch(batch_size)
-
-
-train_dataset = create_dataset(x_train, y_train, n_classes=2)
-val_dataset = create_dataset(x_validation, y_validation, n_classes=2)
-
-model = keras.Sequential([
-    keras.layers.Reshape(target_shape=(NUM_UNIQUE_TRAITS,),
-                         input_shape=(NUM_UNIQUE_TRAITS,)),
-    keras.layers.Dense(units=256, activation='relu'),
-    keras.layers.Dense(units=192, activation='relu'),
-    keras.layers.Dense(units=128, activation='relu'),
-    keras.layers.Dense(units=2, activation='softmax')
-])
-
-# # Learn more about learning rate (e.g. exponential decay) and try implementing it further. We possibly suspect the
-# # learning rate because the training accuracy converges too fast (maybe learns too quickly?) and plateaus for the
-# # rest of the epochs.
-# def exp_decay(t):
-#     initial_lrate = 0.1
-#     k = 0.1
-#     lrate = initial_lrate * np.exp(-k*t)
-#     return lrate
-# lrate = tf.keras.callbacks.LearningRateScheduler(exp_decay)
-
-model.compile(optimizer='adam',
-              loss=tf.compat.v1.keras.losses.CategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
-
-history = model.fit(
-    train_dataset.repeat(),
-    epochs=30,
-    steps_per_epoch=25,
-    validation_data=val_dataset.repeat(),
-    validation_steps=20,
-    verbose=2,
-    )
-
-test_dataset = create_dataset(x_test, y_test, n_classes=2)
-predictions = model.evaluate(test_dataset)
-print('test loss, test acc:', predictions)
+# # TODO: do we even need to run this pre-processing?
+# def preprocess(x, y):
+#     x = tf.cast(x, tf.int64)
+#     y = tf.cast(y, tf.int64)
+#     return x, y
+#
+#
+# def create_dataset(xs, ys, n_classes, batch_size=20):
+#     ys = tf.one_hot(ys, depth=n_classes)
+#     return tf.data.Dataset.from_tensor_slices((xs, ys)).map(preprocess).shuffle(ys.shape[0]).batch(batch_size)
+#
+#
+# train_dataset = create_dataset(x_train, y_train, n_classes=2)
+# val_dataset = create_dataset(x_validation, y_validation, n_classes=2)
+#
+# model = keras.Sequential([
+#     keras.layers.Reshape(target_shape=(NUM_UNIQUE_TRAITS,),
+#                          input_shape=(NUM_UNIQUE_TRAITS,)),
+#     keras.layers.Dense(units=256, activation='relu'),
+#     keras.layers.Dense(units=192, activation='relu'),
+#     keras.layers.Dense(units=128, activation='relu'),
+#     keras.layers.Dense(units=2, activation='softmax')
+# ])
+#
+# # # Learn more about learning rate (e.g. exponential decay) and try implementing it further. We possibly suspect the
+# # # learning rate because the training accuracy converges too fast (maybe learns too quickly?) and plateaus for the
+# # # rest of the epochs.
+# # def exp_decay(t):
+# #     initial_lrate = 0.1
+# #     k = 0.1
+# #     lrate = initial_lrate * np.exp(-k*t)
+# #     return lrate
+# # lrate = tf.keras.callbacks.LearningRateScheduler(exp_decay)
+#
+# model.compile(optimizer='adam',
+#               loss=tf.compat.v1.keras.losses.CategoricalCrossentropy(from_logits=True),
+#               metrics=['accuracy'])
+#
+# history = model.fit(
+#     train_dataset.repeat(),
+#     epochs=30,
+#     steps_per_epoch=25,
+#     validation_data=val_dataset.repeat(),
+#     validation_steps=20,
+#     verbose=2,
+#     )
+#
+# test_dataset = create_dataset(x_test, y_test, n_classes=2)
+# predictions = model.evaluate(test_dataset)
+# print('test loss, test acc:', predictions)
