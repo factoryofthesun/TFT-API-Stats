@@ -20,8 +20,8 @@ from config import PATH_GDRIVE_MAIN_DIR
 warnings.filterwarnings('ignore', category=FutureWarning)
 
 TRAITS_LIST = ["Alchemist", "Assassin", "Avatar", "Berserker", "Blademaster", "Crystal", "Desert", "Druid", "Electric",
-               "Glacial", "Inferno", "Light", "Metal", "Mage", "Mountain", "Mystic", "Ocean", "Poison", "Predator",
-               "Ranger", "Shadow", "Soulbound", "Summoner", "Warden",  "Wind", "Woodland"] #"Lunar", "Steel",
+               "Glacial", "Inferno", "Light", "Celestial", "Mage", "Mountain", "Mystic", "Ocean", "Poison", "Predator",
+               "Ranger", "Shadow", "Soulbound", "Metal", "Summoner", "Warden",  "Wind", "Woodland"]
 
 #########################################################################
 # Extract data and separate data into groups (training, test, validation)
