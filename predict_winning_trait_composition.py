@@ -20,24 +20,25 @@ from config import PATH_GDRIVE_MAIN_DIR
 warnings.filterwarnings('ignore', category=FutureWarning)
 
 TRAITS_LIST = ["Alchemist", "Assassin", "Avatar", "Berserker", "Blademaster", "Crystal", "Desert", "Druid", "Electric",
-               "Glacial", "Inferno", "Light", "Lunar", "Mage", "Mountain", "Mystic", "Ocean", "Poison", "Predator",
-               "Ranger", "Shadow", "Soulbound", "Steel", "Summoner", "Warden",  "Wind", "Woodland"]
+               "Glacial", "Inferno", "Light", "Metal", "Mage", "Mountain", "Mystic", "Ocean", "Poison", "Predator",
+               "Ranger", "Shadow", "Soulbound", "Summoner", "Warden",  "Wind", "Woodland"] #"Lunar", "Steel",
 
 #########################################################################
 # Extract data and separate data into groups (training, test, validation)
 #########################################################################
 
 # Contains top 2 (1st and 2nd place) trait compositions from each match
-top_2_df = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'trait_compositions_first_and_second.csv')
+top_2_df = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'trait_compositions_first_and_second_test1.csv')
 
 # For each match ID, take the difference between trait tiers of 1st place minus 2nd place. We will shuffle
 # the 1st/2nd order in the next step.
-# Will use the split-apply-combine method for pandas array. First, we negate the tier values of 2nd place player
 for trait_name in TRAITS_LIST:
-    top_2_df[top_2_df["Place"] == 2][trait_name] = -top_2_df[top_2_df["Place"] == 2][trait_name]
+    top_2_df.loc[top_2_df["Place"] == 2, trait_name] = -top_2_df[top_2_df["Place"] == 2][trait_name]
+grouped = top_2_df.groupby("GameID")
+diff_df = grouped.sum()
 
+# TODO: continue here
 # Create a randomized array of y-labels (either 1 or 2), and negate the differences accordingly
-
 
 # Finally, shuffle the data entries
 # data_df = data_df.sample(frac=1).reset_index(drop=True)  # Shuffle the entries
