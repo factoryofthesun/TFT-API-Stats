@@ -21,7 +21,7 @@ def processMatchJson(match_data, gameid):
         place = partic['placement']
         #Sort lists for easiser comparison in CSV ouput
         traitlist = sorted([t['name']+str(t['tier_current']) for t in partic['traits'] if t['tier_current'] > 0])
-        unitlist = sorted([unit['name'] + str(unit['tier']) if unit['name'] != '' else unit['character_id'].replace("TFT2_", "") + str[unit['tier']] for unit in partic['units']])
+        unitlist = sorted([unit['name'] + str(unit['tier']) if unit['name'] != '' else unit['character_id'].replace("TFT2_", "") + str(unit['tier']) for unit in partic['units']])
         dmg = partic['total_damage_to_players']
         if unitlist:
             num_units = len(unitlist)
