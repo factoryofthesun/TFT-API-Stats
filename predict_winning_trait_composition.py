@@ -37,9 +37,16 @@ for trait_name in TRAITS_LIST:
 grouped = top_2_df.groupby("GameID")
 diff_df = grouped.sum()
 
-# TODO: continue here
-# Create a randomized array of y-labels (either 1 or 2), and negate the differences accordingly
+# Create a randomized array of y-labels (either 1 or 2, indicating the winner), and negate the differences accordingly
+# (if winner is player 2, need to negate all the trait differences for that match)
+num_matches = diff_df.shape[0]
+diff_df["winner"] = np.random.choice([1, 2], num_matches)
 
+player_2_wins = np.where(diff_df["winner"] == 2)[0]
+diff_df = diff_df.reset_index(drop=True)
+diff_df.loc[player_2_wins, TRAITS_LIST] = -diff_df.loc[player_2_wins, TRAITS_LIST]
+
+# TODO: continue here
 # Finally, shuffle the data entries
 # data_df = data_df.sample(frac=1).reset_index(drop=True)  # Shuffle the entries
 
