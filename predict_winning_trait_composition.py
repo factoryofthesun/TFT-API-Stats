@@ -23,6 +23,8 @@ TRAITS_LIST = ["Alchemist", "Assassin", "Avatar", "Berserker", "Blademaster", "C
                "Glacial", "Inferno", "Light", "Celestial", "Mage", "Mountain", "Mystic", "Ocean", "Poison", "Predator",
                "Ranger", "Shadow", "Soulbound", "Metal", "Summoner", "Warden",  "Wind", "Woodland"]
 
+NUM_UNIQUE_TRAITS = len(TRAITS_LIST)
+
 #########################################################################
 # Extract data and separate data into groups (training, test, validation)
 #########################################################################
@@ -39,6 +41,11 @@ diff_df = grouped.sum()
 
 # Create a randomized array of y-labels (either 1 or 2, indicating the winner), and negate the differences accordingly
 # (if winner is player 2, need to negate all the trait differences for that match)
+# Purpose: apparently the actual order in which the winning team comes into the model (1st/2nd) skews it
+#   Q: Doesn't this method of inversing the difference randomly just increase the noise, though?
+#   If the model isn't able to distinguish between which differences involve which player num winning, then
+#   isn't this actually just changing the outcome data? Otherwise we would need to include a feature indicating whether player 1
+#   or player 2 wins.
 num_matches = diff_df.shape[0]
 diff_df["winner"] = np.random.choice([1, 2], num_matches)
 
@@ -67,6 +74,10 @@ diff_df.loc[player_2_wins, TRAITS_LIST] = -diff_df.loc[player_2_wins, TRAITS_LIS
 ################
 # Run neural net predictor
 ################
+# Training data: 119372/2 = 59686 * .75 = 44764
+# Input structure: If we apply "one hot encoding" over every differenced trait we get a possible range from -3 to 3 (assuming 3 tiers for each trait)
+#   Then the model will consider 7 * num(traits) features???
+#   Consider adjusting the units counts in the subsequent hidden layers accordingly (256 neurons might be too many)
 
 # # TODO: do we even need to run this pre-processing?
 # def preprocess(x, y):
@@ -74,8 +85,8 @@ diff_df.loc[player_2_wins, TRAITS_LIST] = -diff_df.loc[player_2_wins, TRAITS_LIS
 #     y = tf.cast(y, tf.int64)
 #     return x, y
 #
-#
-# def create_dataset(xs, ys, n_classes, batch_size=20):
+# "Smaller batch sizes offer a regularizing effect and lower generalization error, and are easier to fit into GPU memory"
+# def create_dataset(xs, ys, n_classes, batch_size=256):
 #     ys = tf.one_hot(ys, depth=n_classes)
 #     return tf.data.Dataset.from_tensor_slices((xs, ys)).map(preprocess).shuffle(ys.shape[0]).batch(batch_size)
 #
@@ -89,7 +100,7 @@ diff_df.loc[player_2_wins, TRAITS_LIST] = -diff_df.loc[player_2_wins, TRAITS_LIS
 #     keras.layers.Dense(units=256, activation='relu'),
 #     keras.layers.Dense(units=192, activation='relu'),
 #     keras.layers.Dense(units=128, activation='relu'),
-#     keras.layers.Dense(units=2, activation='softmax')
+#     keras.layers.Dense(units=1, activation='sigmoid') #Give probability as opposed to binary prediction
 # ])
 #
 # # # Learn more about learning rate (e.g. exponential decay) and try implementing it further. We possibly suspect the
@@ -108,10 +119,10 @@ diff_df.loc[player_2_wins, TRAITS_LIST] = -diff_df.loc[player_2_wins, TRAITS_LIS
 #
 # history = model.fit(
 #     train_dataset.repeat(),
-#     epochs=30,
-#     steps_per_epoch=25,
+#     epochs=50,
+#     steps_per_epoch=25, CONSIDER SKIPPING THIS SINCE WE WANT TO RUN THROUGH WHOLE TRAINING SET
 #     validation_data=val_dataset.repeat(),
-#     validation_steps=20,
+#     validation_steps=20, CONSIDER SKIPPING THIS SINCE WE WANT TO RUN THROUGH WHOLE VALIDATION SET
 #     verbose=2,
 #     )
 #

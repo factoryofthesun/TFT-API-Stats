@@ -63,8 +63,8 @@ set2wide.sort_values(by = ['GameID', 'Place'], inplace = True)
 # Assign empty cell values to 0 for data analysis purposes later
 set2wide.fillna(0, inplace = True)
 
-# TODO: Prune out rows that only have data for a first place finish (Dennis ran into an issue where 
+# TODO: Prune out rows that only have data for a first place finish (Dennis ran into an issue where
 # one game only had data from a single player in a game)
 
 # Output the summary dataframe to a .csv file titled "trait_compositions_first_and_second.csv"
-set2wide.to_csv(PATH_GDRIVE_MAIN_DIR + "trait_compositions_first_and_second.csv", index = False)
+set2wide.to_csv(PATH_GDRIVE_MAIN_DIR + "trait_compositions_first_and_second_v2.csv", index = False)

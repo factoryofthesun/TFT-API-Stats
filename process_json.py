@@ -48,8 +48,5 @@ for f in glob.glob(os.path.join(PATH_GDRIVE_JSON_DIR, '*.json')):
         df_list.append(processed_data)
 
 final_df = pd.concat(df_list, ignore_index = True, sort = False)
-<<<<<<< HEAD
-final_df.to_csv(PATH_GDRIVE_MAIN_DIR + 'compositions_data_v2.csv', index = False)
-=======
+
 final_df.to_csv(PATH_GDRIVE_MAIN_DIR + 'compositions_data_v3_test.csv', index = False)
->>>>>>> Removed empty unit lists from the composition file to clean up dataset
