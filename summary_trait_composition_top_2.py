@@ -41,10 +41,6 @@ set2summ = summ_df.loc[(summ_df['Game Date'] >= set2_date) & (summ_df['Place'].i
 #Convert traits column into lists
 set2summ['Traits'] = set2summ.Traits.apply(lambda x: x[1:-1].split(','))
 
-# TODO: Remove single quotes around the original list of traits and remove preceding spaces to some of the traits in
-# TODO: the list.
-
-
 #Collapse list of traits into individual rows
 set2long = pd.DataFrame({col: np.repeat(set2summ[col].values, set2summ['Traits'].str.len())
                         for col in set2summ.columns.drop('Traits')}).\
@@ -64,8 +60,11 @@ set2wide.index.name = set2wide.columns.name = None
 #Sort by gameid, then place
 set2wide.sort_values(by = ['GameID', 'Place'], inplace = True)
 
-# TODO: Assign empty cell values to 0 for data analysis purposes later
+# Assign empty cell values to 0 for data analysis purposes later
 set2wide.fillna(0, inplace = True)
+
+# TODO: Prune out rows that only have data for a first place finish (Dennis ran into an issue where 
+# one game only had data from a single player in a game)
 
 # Output the summary dataframe to a .csv file titled "trait_compositions_first_and_second.csv"
 set2wide.to_csv(PATH_GDRIVE_MAIN_DIR + "trait_compositions_first_and_second.csv", index = False)
