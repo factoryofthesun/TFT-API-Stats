@@ -23,7 +23,7 @@ TRAITS_LIST = ["Alchemist", "Assassin", "Avatar", "Berserker", "Blademaster", "C
                "Glacial", "Inferno", "Light", "Celestial", "Mage", "Mountain", "Mystic", "Ocean", "Poison", "Predator",
                "Ranger", "Shadow", "Soulbound", "Metal", "Summoner", "Warden",  "Wind", "Woodland"]
 
-NUM_UNIQUE_TRAITS = len(TRAITS_LIST)
+NUM_UNIQUE_TRAITS = len(TRAITS_LIST) #27 unique traits 
 
 #########################################################################
 # Extract data and separate data into groups (training, test, validation)
