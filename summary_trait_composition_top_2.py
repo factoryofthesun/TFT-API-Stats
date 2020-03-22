@@ -29,14 +29,25 @@ currently we will only be using the GameID, Place, and Traits columns to simplif
 """
 
 #Read in compositions data
-comps_data = pd.read_csv(PATH_GDRIVE_MAIN_DIR+'compositions_data.csv')
+comps_data = pd.read_csv(PATH_GDRIVE_MAIN_DIR+'compositions_data_full.csv')
 set2_date = '11-06-2019'
+
+#Drop data points with empty units
+comps_data = comps_data.loc[pd.notna(comps_data['Units']) & (comps_data['Units'] != ''),]
+
 # Take only the columns with GameID, Place, and Traits and place into a summary dataframe
 summ_df = comps_data.loc[:,['GameID', 'Game Date','Place','Traits']]
 
 # Remove data from Game Versions prior to 9.22 and not 1st/2nd place
 summ_df['Game Date'] = pd.to_datetime(summ_df['Game Date'])
 set2summ = summ_df.loc[(summ_df['Game Date'] >= set2_date) & (summ_df['Place'].isin([1,2])),]
+
+#Remove games in which there is no 2nd place
+good_games = set2summ.loc[(set2summ['Place'] == 2), 'GameID'].tolist()
+set2summ = set2summ.loc[set2summ.GameID.isin(good_games),]
+
+print("Number of first place: {}, Number of second place: {}".\
+        format(sum(set2summ.Place == 1), sum(set2summ.Place == 2))) #Check counts
 
 #Convert traits column into lists
 set2summ['Traits'] = set2summ.Traits.apply(lambda x: x[1:-1].split(','))
@@ -52,6 +63,7 @@ set2long = set2long.loc[pd.notna(set2long['Traits']) & (set2long['Traits'] != ''
 set2long['Tier'] = pd.to_numeric(set2long['Traits'].str.extract('(\d+)', expand = False))
 set2long['Traits'] = set2long['Traits'].str.extract('([a-zA-Z]+)', expand = False)
 
+set2long.to_csv(PATH_GDRIVE_MAIN_DIR + "compositions_data_traits_units_clean.csv", index = False) #Export as compositions_data_v2.csv
 #Sort by trait name, then pivot long to wide with trait names as columns and tiers as values
 set2long = set2long.sort_values(by = ['Traits'])
 set2wide = set2long.pivot_table(index = ['GameID', 'Game Date', 'Place'], columns = 'Traits', values = 'Tier').reset_index()
@@ -67,4 +79,4 @@ set2wide.fillna(0, inplace = True)
 # one game only had data from a single player in a game)
 
 # Output the summary dataframe to a .csv file titled "trait_compositions_first_and_second.csv"
-set2wide.to_csv(PATH_GDRIVE_MAIN_DIR + "trait_compositions_first_and_second_v2.csv", index = False)
+set2wide.to_csv(PATH_GDRIVE_MAIN_DIR + "trait_compositions_first_and_second_v3.csv", index = False)

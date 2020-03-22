@@ -23,11 +23,7 @@ def processMatchJson(match_data, gameid):
         traitlist = sorted([t['name']+str(t['tier_current']) for t in partic['traits'] if t['tier_current'] > 0])
         unitlist = sorted([unit['name'] + str(unit['tier']) if unit['name'] != '' else unit['character_id'].replace("TFT2_", "") + str(unit['tier']) for unit in partic['units']])
         dmg = partic['total_damage_to_players']
-        if unitlist:
-            num_units = len(unitlist)
-        else:
-            # If the unit list is empty, do not add it to the dataframe
-            continue
+        num_units = len(unitlist)
         partic_data = [game_version, game_dtime, gameid, region, puuid, place, traitlist, unitlist, dmg, num_units]
         flat_data_list.append(partic_data)
     flatdf = pd.DataFrame(flat_data_list, columns = ['Game Version','Game Date','GameID',
@@ -49,4 +45,4 @@ for f in glob.glob(os.path.join(PATH_GDRIVE_JSON_DIR, '*.json')):
 
 final_df = pd.concat(df_list, ignore_index = True, sort = False)
 
-final_df.to_csv(PATH_GDRIVE_MAIN_DIR + 'compositions_data_v3_test.csv', index = False)
+final_df.to_csv(PATH_GDRIVE_MAIN_DIR + 'compositions_data.csv', index = False)
