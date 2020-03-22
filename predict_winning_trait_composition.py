@@ -41,11 +41,6 @@ diff_df = grouped.sum()
 
 # Create a randomized array of y-labels (either 1 or 2, indicating the winner), and negate the differences accordingly
 # (if winner is player 2, need to negate all the trait differences for that match)
-# Purpose: apparently the actual order in which the winning team comes into the model (1st/2nd) skews it
-#   Q: Doesn't this method of inversing the difference randomly just increase the noise, though?
-#   If the model isn't able to distinguish between which differences involve which player num winning, then
-#   isn't this actually just changing the outcome data? Otherwise we would need to include a feature indicating whether player 1
-#   or player 2 wins.
 num_matches = diff_df.shape[0]
 diff_df["winner"] = np.random.choice([1, 2], num_matches)
 
