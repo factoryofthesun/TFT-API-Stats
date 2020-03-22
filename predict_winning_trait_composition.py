@@ -30,7 +30,7 @@ NUM_UNIQUE_TRAITS = len(TRAITS_LIST)
 #########################################################################
 
 # Contains top 2 (1st and 2nd place) trait compositions from each match
-top_2_df = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'trait_compositions_first_and_second_test1.csv')
+top_2_df = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'trait_compositions_first_and_second_v2_test2.csv')
 
 # For each match ID, take the difference between trait tiers of 1st place minus 2nd place. We will shuffle
 # the 1st/2nd order in the next step.
@@ -53,22 +53,21 @@ player_2_wins = np.where(diff_df["winner"] == 2)[0]
 diff_df = diff_df.reset_index(drop=True)
 diff_df.loc[player_2_wins, TRAITS_LIST] = -diff_df.loc[player_2_wins, TRAITS_LIST]
 
-# TODO: continue here
 # Finally, shuffle the data entries
-# data_df = data_df.sample(frac=1).reset_index(drop=True)  # Shuffle the entries
+diff_df = diff_df.sample(frac=1).reset_index(drop=True)  # Shuffle the entries
 
 # Split into training and validation
-# num_train = 480
-# num_validation = 160
-# num_test = len(rgba) - num_train - num_validation
-# assert num_test > 0
-#
-# x_train = rgba[:num_train]
-# y_train = ys[:num_train]
-# x_validation = rgba[num_train:(num_train + num_validation)]
-# y_validation = ys[num_train:(num_train + num_validation)]
-# x_test = rgba[-num_test:]
-# y_test = ys[-num_test:]
+num_train = 500
+num_validation = 250
+num_test = diff_df.shape[0] - num_train - num_validation
+assert num_test > 0
+
+x_train = diff_df.loc[:num_train, TRAITS_LIST]
+y_train = diff_df.loc[:num_train, "winner"]
+x_validation = diff_df.loc[:num_validation, TRAITS_LIST]
+y_validation = diff_df.loc[:num_validation, "winner"]
+x_test = diff_df.loc[:num_test, TRAITS_LIST]
+y_test = diff_df.loc[:num_test, "winner"]
 
 
 ################
