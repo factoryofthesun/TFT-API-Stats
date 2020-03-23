@@ -73,20 +73,15 @@ y_test = diff_df.loc[:num_test, "winner"]
 #   Then the model will consider 7 * num(traits) features???
 #   Consider adjusting the units counts in the subsequent hidden layers accordingly (256 neurons might be too many)
 
-# # TODO: do we even need to run this pre-processing?
-# def preprocess(x, y):
-#     x = tf.cast(x, tf.int64)
-#     y = tf.cast(y, tf.int64)
-#     return x, y
-#
 # "Smaller batch sizes offer a regularizing effect and lower generalization error, and are easier to fit into GPU memory"
-# def create_dataset(xs, ys, n_classes, batch_size=256):
-#     ys = tf.one_hot(ys, depth=n_classes)
-#     return tf.data.Dataset.from_tensor_slices((xs, ys)).map(preprocess).shuffle(ys.shape[0]).batch(batch_size)
-#
-#
-# train_dataset = create_dataset(x_train, y_train, n_classes=2)
-# val_dataset = create_dataset(x_validation, y_validation, n_classes=2)
+def create_dataset(xs, ys, n_classes, batch_size=256):
+    xs = xs.to_numpy()
+    ys = ys.to_numpy()
+    ys = tf.one_hot(ys, depth=n_classes)
+    return tf.data.Dataset.from_tensor_slices((xs, ys)).shuffle(ys.shape[0]).batch(batch_size)
+
+train_dataset = create_dataset(x_train, y_train, n_classes=2)
+val_dataset = create_dataset(x_validation, y_validation, n_classes=2)
 #
 # model = keras.Sequential([
 #     keras.layers.Reshape(target_shape=(NUM_UNIQUE_TRAITS,),
