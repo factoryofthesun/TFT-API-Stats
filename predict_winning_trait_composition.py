@@ -21,9 +21,9 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 
 TRAITS_LIST = ["Alchemist", "Assassin", "Avatar", "Berserker", "Blademaster", "Crystal", "Desert", "Druid", "Electric",
                "Glacial", "Inferno", "Light", "Celestial", "Mage", "Mountain", "Mystic", "Ocean", "Poison", "Predator",
-               "Ranger", "Shadow", "Soulbound", "Metal", "Summoner", "Warden",  "Wind", "Woodland"]
+               "Ranger", "Shadow", "Soulbound", "Metal", "Summoner", "Warden", "Wind", "Woodland"]
 
-NUM_UNIQUE_TRAITS = len(TRAITS_LIST) #27 unique traits 
+NUM_UNIQUE_TRAITS = len(TRAITS_LIST)  # 27 unique traits
 
 #########################################################################
 # Extract data and separate data into groups (training, test, validation)
@@ -59,10 +59,15 @@ assert num_test > 0
 
 x_train = diff_df.loc[:num_train, TRAITS_LIST]
 y_train = diff_df.loc[:num_train, "winner"]
-x_validation = diff_df.loc[:num_validation, TRAITS_LIST]
-y_validation = diff_df.loc[:num_validation, "winner"]
-x_test = diff_df.loc[:num_test, TRAITS_LIST]
-y_test = diff_df.loc[:num_test, "winner"]
+
+# Use the values after the training set as the validation set
+validation_index = num_validation + num_train
+x_validation = diff_df.loc[num_train:validation_index, TRAITS_LIST]
+y_validation = diff_df.loc[num_train:validation_index, "winner"]
+
+test_index = validation_index + num_test
+x_test = diff_df.loc[validation_index:test_index, TRAITS_LIST]
+y_test = diff_df.loc[validation_index:test_index, "winner"]
 
 
 ################
@@ -80,8 +85,12 @@ def create_dataset(xs, ys, n_classes, batch_size=256):
     ys = tf.one_hot(ys, depth=n_classes)
     return tf.data.Dataset.from_tensor_slices((xs, ys)).shuffle(ys.shape[0]).batch(batch_size)
 
+
 train_dataset = create_dataset(x_train, y_train, n_classes=2)
 val_dataset = create_dataset(x_validation, y_validation, n_classes=2)
+
+# train_repeat = train_dataset.repeat()
+# val_repeat = val_dataset.repeat()
 #
 # model = keras.Sequential([
 #     keras.layers.Reshape(target_shape=(NUM_UNIQUE_TRAITS,),
@@ -89,18 +98,21 @@ val_dataset = create_dataset(x_validation, y_validation, n_classes=2)
 #     keras.layers.Dense(units=256, activation='relu'),
 #     keras.layers.Dense(units=192, activation='relu'),
 #     keras.layers.Dense(units=128, activation='relu'),
-#     keras.layers.Dense(units=1, activation='sigmoid') #Give probability as opposed to binary prediction
+#     keras.layers.Dense(units=1, activation='sigmoid')  # Give probability as opposed to binary prediction
 # ])
 #
-# # # Learn more about learning rate (e.g. exponential decay) and try implementing it further. We possibly suspect the
-# # # learning rate because the training accuracy converges too fast (maybe learns too quickly?) and plateaus for the
-# # # rest of the epochs.
-# # def exp_decay(t):
-# #     initial_lrate = 0.1
-# #     k = 0.1
-# #     lrate = initial_lrate * np.exp(-k*t)
-# #     return lrate
-# # lrate = tf.keras.callbacks.LearningRateScheduler(exp_decay)
+#
+# # # # Learn more about learning rate (e.g. exponential decay) and try implementing it further. We possibly suspect the
+# # # # learning rate because the training accuracy converges too fast (maybe learns too quickly?) and plateaus for the
+# # # # rest of the epochs.
+# def exp_decay(t):
+#     initial_lrate = 0.1
+#     k = 0.1
+#     lrate = initial_lrate * np.exp(-k * t)
+#     return lrate
+#
+#
+# lrate = tf.keras.callbacks.LearningRateScheduler(exp_decay)
 #
 # model.compile(optimizer='adam',
 #               loss=tf.compat.v1.keras.losses.CategoricalCrossentropy(from_logits=True),
@@ -109,9 +121,11 @@ val_dataset = create_dataset(x_validation, y_validation, n_classes=2)
 # history = model.fit(
 #     train_dataset.repeat(),
 #     epochs=50,
-#     steps_per_epoch=25, CONSIDER SKIPPING THIS SINCE WE WANT TO RUN THROUGH WHOLE TRAINING SET
+#     #TODO: CONSIDER SKIPPING THIS SINCE WE WANT TO RUN THROUGH WHOLE TRAINING SET
+#     steps_per_epoch=25,
 #     validation_data=val_dataset.repeat(),
-#     validation_steps=20, CONSIDER SKIPPING THIS SINCE WE WANT TO RUN THROUGH WHOLE VALIDATION SET
+#     #TODO: CONSIDER SKIPPING THIS SINCE WE WANT TO RUN THROUGH WHOLE VALIDATION SET
+#     validation_steps=20,
 #     verbose=2,
 #     )
 #
