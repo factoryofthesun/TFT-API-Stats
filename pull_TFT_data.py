@@ -1,11 +1,18 @@
+'''
+This script pulls every match played by every "high tier" player (i.e. Challenger, GM, Master) since the most recent patch,
+and saves each match result in a JSON format.
+'''
+
 import os
 import pandas as pd
 import requests
 from datetime import datetime
 import json
 import time
+from datetime import datetime
 from config import PATH_GDRIVE_MAIN_DIR, PATH_GDRIVE_JSON_DIR
 
+patch_date = datetime(2020, 4, 28) # Set to most recent patch date
 API_KEY = os.environ.get("API_KEY")
 API_KEY_SUFFIX = '?api_key=' + API_KEY
 
@@ -83,14 +90,12 @@ def processReturnCodes(code):
 
 #Get all challenger, grandmaster, and master players from all regions PUUIDs
 tiers = ['Challenger', 'Grandmaster', 'Master']
-platform_summoner_ids = {}
-platform_puuids = {}
-platform_matchids = {}
 
 fail_count = 0
+match_ids = []
 for platform_key, platform_link in PLATFORM_DICT.items():
     #Ad Hoc way to skip finished regions while the script is still crashing
-    if platform_key in ['BR1', 'EUN1', 'EUW1', 'JP1', 'KR', 'LA1', 'LA2', 'NA1', 'OC1', 'TR1']:
+    if platform_key in ['BR1', 'EUN1', 'EUW1', 'JP1', 'KR']:
         continue
     if platform_key in AMERICAS_PLATFORMS:
         region = 'AMERICAS'
@@ -187,13 +192,21 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                     continue
                 fail_count = 0
                 match_details = match_detail_response.json()
+                # Matches are list starting with most recent - if match date is before the patch, then can skip the rest
+                game_dtime = datetime.fromtimestamp(match_details['info']['game_datetime']/1000.0)
+                if game_dtime < patch_date:
+                    print("Reached the last game for the newest patch for summoner {}".format(summoner_dict['name']))
+                    break
                 #Add relevant metadata to JSON: summoner name, id, patch, etc
                 match_details["metadata"]['summoner_id'] = summonerID
                 match_details["metadata"]['puuid'] = puuid
                 match_details["metadata"]['summoner_name']  = summoner_dict['name']
                 #Save match data as its own JSON file
-                json_file_name = PATH_GDRIVE_JSON_DIR + match_id + '.json'
+                json_file_name = PATH_GDRIVE_JSON_DIR + "10.9/" + match_id + '.json'
                 with open(json_file_name, 'w') as fp:
                     json.dump(match_details, fp)
                 print("Saved {} successfully.".format(json_file_name))
+                match_ids.append(match_id)
+            temp_match_df = pd.DataFrame({'Match IDs':match_ids})
+            temp_match_df.to_csv(PATH_GDRIVE_MAIN_DIR + 'match_ids.csv', index = False, header=False, mode = 'a')
     print("Region {} completed.".format(platform_key))
