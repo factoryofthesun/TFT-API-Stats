@@ -8,6 +8,7 @@ import time
 from config import PATH_GDRIVE_MAIN_DIR, PATH_GDRIVE_JSON_DIR
 
 #TODO: CREATE FUNCTIONALITY FOR APPENDING NEW DATA
+#TODO: MAKE THIS MORE EFFICIENT BY APPLYING PANDAS READ_JSON FUNCTION DIRECTLY (MAYBE???)
 #Functions
 def processMatchJson(match_data, gameid):
     #Every player end-game state is a single row in the return dataframe

@@ -28,55 +28,52 @@ currently we will only be using the GameID, Place, and Traits columns to simplif
 
 """
 
-#Read in compositions data
+# Read in compositions data
 comps_data = pd.read_csv(PATH_GDRIVE_MAIN_DIR+'compositions_data_full.csv')
+
+# Since the meta shifts significantly per patch, let's restrict our analysis to one historic patch period for now
+game_version = "10.2"
 set2_date = '11-06-2019'
 
-#Drop data points with empty units
+# Drop data points with empty units
 comps_data = comps_data.loc[pd.notna(comps_data['Units']) & (comps_data['Units'] != ''),]
+
+# Take only specified game version and 1st/2nd place finishes
+comps_data['Game Version Short'] = comps_data['Game Version'].str.extract(r'(\d*[.][^.]*)', expand=False) # Everything up until but excluding 2nd period
+comps_data = comps_data.loc[(comps_data['Game Version Short'] == game_version) & (comps_data['Place'].isin([1,2]))]
 
 # Take only the columns with GameID, Place, and Traits and place into a summary dataframe
 summ_df = comps_data.loc[:,['GameID', 'Game Date','Place','Traits']]
 
-# Remove data from Game Versions prior to 9.22 and not 1st/2nd place
-summ_df['Game Date'] = pd.to_datetime(summ_df['Game Date'])
-set2summ = summ_df.loc[(summ_df['Game Date'] >= set2_date) & (summ_df['Place'].isin([1,2])),]
-
-#Remove games in which there is no 2nd place
-good_games = set2summ.loc[(set2summ['Place'] == 2), 'GameID'].tolist()
-set2summ = set2summ.loc[set2summ.GameID.isin(good_games),]
+# Remove games in which there is no 2nd place
+good_games = summ_df.loc[(summ_df['Place'] == 2), 'GameID'].tolist()
+summ_df = summ_df.loc[summ_df.GameID.isin(good_games),]
 
 print("Number of first place: {}, Number of second place: {}".\
-        format(sum(set2summ.Place == 1), sum(set2summ.Place == 2))) #Check counts
+        format(sum(summ_df.Place == 1), sum(summ_df.Place == 2))) #Check counts
 
-#Convert traits column into lists
-set2summ['Traits'] = set2summ.Traits.apply(lambda x: x[1:-1].split(','))
-
-#Collapse list of traits into individual rows
-set2long = pd.DataFrame({col: np.repeat(set2summ[col].values, set2summ['Traits'].str.len())
-                        for col in set2summ.columns.drop('Traits')}).\
-                        assign(**{'Traits': np.concatenate(set2summ['Traits'].values)})[set2summ.columns]
+# Explode traits column
+summ_df['Traits'] = summ_df.Traits.apply(lambda x: x[1:-1].split(',')) # Convert traits column into lists
+summ_long = summ_df.explode('Traits')
 
 #Split out traits into trait name and tier
-set2long['Traits'] = set2long['Traits'].str.replace('Set2', '') #Remove Set2 substring to simplify the regex
-set2long = set2long.loc[pd.notna(set2long['Traits']) & (set2long['Traits'] != ''),] #Drop empty traits values
-set2long['Tier'] = pd.to_numeric(set2long['Traits'].str.extract('(\d+)', expand = False))
-set2long['Traits'] = set2long['Traits'].str.extract('([a-zA-Z]+)', expand = False)
+summ_long['Traits'] = summ_long['Traits'].str.replace('summ_', '') # Remove summ_ substring to simplify the regex
+summ_long = summ_long.loc[pd.notna(summ_long['Traits']) & (summ_long['Traits'] != ''),] # Drop empty traits values
+summ_long['Tier'] = pd.to_numeric(summ_long['Traits'].str.extract('(\d+)', expand = False)) # Only numeric tier value
+summ_long['Traits'] = summ_long['Traits'].str.extract('([a-zA-Z]+)', expand = False) # Only text trait data
 
-set2long.to_csv(PATH_GDRIVE_MAIN_DIR + "compositions_data_traits_units_clean.csv", index = False) #Export as compositions_data_v2.csv
+summ_long.to_csv(PATH_GDRIVE_MAIN_DIR + f"comps_traits_units_clean_{game_version}.csv", index = False)
+
 #Sort by trait name, then pivot long to wide with trait names as columns and tiers as values
-set2long = set2long.sort_values(by = ['Traits'])
-set2wide = set2long.pivot_table(index = ['GameID', 'Game Date', 'Place'], columns = 'Traits', values = 'Tier').reset_index()
-set2wide.index.name = set2wide.columns.name = None
+summ_long = summ_long.sort_values(by = ['Traits'])
+summ_wide = summ_long.pivot_table(index = ['GameID', 'Game Date', 'Place'], columns = 'Traits', values = 'Tier').reset_index()
+summ_wide.index.name = summ_wide.columns.name = None
 
 #Sort by gameid, then place
-set2wide.sort_values(by = ['GameID', 'Place'], inplace = True)
+summ_wide.sort_values(by = ['GameID', 'Place'], inplace = True)
 
 # Assign empty cell values to 0 for data analysis purposes later
-set2wide.fillna(0, inplace = True)
-
-# TODO: Prune out rows that only have data for a first place finish (Dennis ran into an issue where
-# one game only had data from a single player in a game)
+summ_wide.fillna(0, inplace = True)
 
 # Output the summary dataframe to a .csv file titled "trait_compositions_first_and_second.csv"
-set2wide.to_csv(PATH_GDRIVE_MAIN_DIR + "trait_compositions_first_and_second_v3.csv", index = False)
+summ_wide.to_csv(f"{PATH_GDRIVE_MAIN_DIR}trait_compositions_first_and_second_{game_version}.csv", index = False)

@@ -34,14 +34,14 @@ TRAITS_LIST = ["Alchemist", "Assassin", "Avatar", "Berserker", "Blademaster", "C
                "Ranger", "Shadow", "Soulbound", "Metal", "Summoner", "Warden",  "Wind", "Woodland"]
 
 NUM_UNIQUE_TRAITS = len(TRAITS_LIST) #27 unique traits
-
+GAME_VERSION = 10.2
 #########################################################################
 # DATA PREPROCESSING
 # Extract data and separate data into groups (training, test, validation)
 #########################################################################
 
 # Contains top 2 (1st and 2nd place) trait compositions from each match
-top_2_df = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'trait_compositions_first_and_second_v2_test2.csv')
+top_2_df = pd.read_csv(f'{PATH_GDRIVE_MAIN_DIR}trait_compositions_first_and_second_{GAME_VERSION}.csv')
 
 # For each match ID, take the difference between trait tiers of 1st place minus 2nd place. We will shuffle
 # the 1st/2nd order in the next step.
@@ -58,6 +58,8 @@ print("Samples after dropping missing: {}".format(len(diff_df.index)))
 # Create a randomized array of y-labels (either 0 or 1, indicating the winner; 0 = player 1, 1 = player 2), and negate the differences accordingly
 # (if winner is player 2, need to negate all the trait differences for that match)
 num_matches = diff_df.shape[0]
+
+np.random.seed(0)
 diff_df["winner"] = np.random.choice([0, 1], num_matches)
 
 player_2_wins = np.where(diff_df["winner"] == 1)[0]
@@ -75,13 +77,15 @@ for trait_name in TRAITS_LIST:
 
 
 # Split into training and validation (use smaller sample size for testing)
+perc_train = 0.6
+perc_val = 0.2
+perc_test = 0.2
+
 num_train = 500
 num_validation = 250
 num_test = 250
-#num_test = diff_df.shape[0] - num_train - num_validation
-assert num_test > 0
 
-#TODO: clean this up by calling sklearn's train_test_split
+# TODO: use Pytorch's DataSet class instead to do the splitting
 x_train = diff_df.loc[:num_train, TRAITS_LIST].astype(int).values
 y_train = diff_df.loc[:num_train, "winner"].values
 x_validation = diff_df.loc[num_train:(num_validation + num_train), TRAITS_LIST].astype(int).values
@@ -120,9 +124,8 @@ else:
 ################
 # Categorical Embedding values
 ################
-target_dict = {'Player 1 Win': 1, 'Player 2 Win': 2}
 
-#Create embedding variables
+# Create embedding variables
 '''
 We can use categorical embeddings instead of one-hot encodings in order to
 capture the relationship between levels within a trait

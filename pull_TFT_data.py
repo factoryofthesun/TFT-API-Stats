@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 from config import PATH_GDRIVE_MAIN_DIR, PATH_GDRIVE_JSON_DIR
 
-patch_date = datetime(2020, 4, 28) # Set to most recent patch date
+patch_date = datetime(2020, 4, 28) # TODO: FILTER BY GAME VERSION INSTEAD OF DATE (different regions have patches hit at different times)
 API_KEY = os.environ.get("API_KEY")
 API_KEY_SUFFIX = '?api_key=' + API_KEY
 
@@ -95,7 +95,7 @@ fail_count = 0
 match_ids = []
 for platform_key, platform_link in PLATFORM_DICT.items():
     #Ad Hoc way to skip finished regions while the script is still crashing
-    if platform_key in ['BR1', 'EUN1', 'EUW1', 'JP1', 'KR']:
+    if platform_key != "NA1":
         continue
     if platform_key in AMERICAS_PLATFORMS:
         region = 'AMERICAS'
