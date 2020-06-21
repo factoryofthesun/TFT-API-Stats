@@ -29,7 +29,7 @@ currently we will only be using the GameID, Place, and Traits columns to simplif
 """
 
 # Read in compositions data
-comps_data = pd.read_csv(PATH_GDRIVE_MAIN_DIR+'compositions_data_full.csv')
+comps_data = pd.read_csv(PATH_GDRIVE_MAIN_DIR+'compositions_data.csv')
 
 # Since the meta shifts significantly per patch, let's restrict our analysis to one historic patch period for now
 game_version = "10.2"
@@ -52,12 +52,15 @@ summ_df = summ_df.loc[summ_df.GameID.isin(good_games),]
 print("Number of first place: {}, Number of second place: {}".\
         format(sum(summ_df.Place == 1), sum(summ_df.Place == 2))) #Check counts
 
+# Clean up traits column string
+summ_df['Traits'] = summ_df['Traits'].str.replace('Set2_', '')
+summ_df['Traits'] = summ_df['Traits'].str.replace('[^a-zA-Z\d]+', '')
+
 # Explode traits column
-summ_df['Traits'] = summ_df.Traits.apply(lambda x: x[1:-1].split(',')) # Convert traits column into lists
+summ_df['Traits'] = summ_df.Traits.apply(lambda x: x.split(',')) # Convert traits column into lists
 summ_long = summ_df.explode('Traits')
 
 #Split out traits into trait name and tier
-summ_long['Traits'] = summ_long['Traits'].str.replace('summ_', '') # Remove summ_ substring to simplify the regex
 summ_long = summ_long.loc[pd.notna(summ_long['Traits']) & (summ_long['Traits'] != ''),] # Drop empty traits values
 summ_long['Tier'] = pd.to_numeric(summ_long['Traits'].str.extract('(\d+)', expand = False)) # Only numeric tier value
 summ_long['Traits'] = summ_long['Traits'].str.extract('([a-zA-Z]+)', expand = False) # Only text trait data
