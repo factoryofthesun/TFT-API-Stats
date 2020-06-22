@@ -3,7 +3,7 @@ Logistic prediction models for the following problem statement:
 Given player team composition information and (historical) unit performance information, predict the
 winner in a 1v1 situation.
 
-Features to consider
+Features under consideration:
     Dummies for units and traits
     Interactions b/w trait permutations
     Interactions b/w unit, level, and items
@@ -27,7 +27,7 @@ from sklearn.linear_model import LogisticRegression
 from config import PATH_GDRIVE_MAIN_DIR
 
 # Global variable
-GAME_VERSION = 10.2 
+GAME_VERSION = 10.2
 
 # Read in data
 

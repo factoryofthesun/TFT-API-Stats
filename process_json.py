@@ -1,3 +1,9 @@
+"""
+
+Script for aggregating all the individual match data JSONs.
+Our output file will be compositions_data.pickle in order to preserve object information (e.g. lists)
+
+"""
 import os
 import glob
 import pandas as pd
@@ -20,30 +26,40 @@ def processMatchJson(match_data, gameid):
         #TODO: ASSIGN ITEMS TO CHAMPIONS
         puuid = partic['puuid']
         place = partic['placement']
-        #Sort lists for easiser comparison in CSV ouput
         traitlist = sorted([t['name']+str(t['tier_current']) for t in partic['traits'] if t['tier_current'] > 0])
-        unitlist = sorted([unit['name'] + str(unit['tier']) if unit['name'] != '' else unit['character_id'].replace("TFT2_", "") + str(unit['tier']) for unit in partic['units']])
+
+        # Units will be list of dictionaries: [{name, item, tier}, ...]
+        unit_names = [unit['name'] if unit['name'] != '' else unit['character_id'].replace("TFT2_", "") for unit in partic['units']]
+        if len(unit_names) == 0:
+            unit_dict = []
+        else:
+            unit_tiers = [unit['tier'] for unit in partic['units']]
+            unit_items = [unit['items'] for unit in partic['units']]
+            assert len(unit_names) == len(unit_tiers) == len(unit_items)
+            unit_dict = [{'name': name, 'tier': tier, 'items': items} for name, tier, items in zip(unit_names, unit_tiers, unit_items)]
+
         dmg = partic['total_damage_to_players']
-        num_units = len(unitlist)
-        partic_data = [game_version, game_dtime, gameid, region, puuid, place, traitlist, unitlist, dmg, num_units]
+        num_units = len(unit_dict)
+        partic_data = [game_version, game_dtime, gameid, region, puuid, place, traitlist, unit_dict, dmg, num_units]
         flat_data_list.append(partic_data)
     flatdf = pd.DataFrame(flat_data_list, columns = ['Game Version','Game Date','GameID',
                                                     'Region','PUUID', 'Place', 'Traits',
                                                     'Units', 'Damage', 'TeamSize'])
     return flatdf
 
-#Process JSON match data and create groups of compositions and placement frequencies
-df_list = []
+if __name__ == "__main__":
+    # Process JSON match data and create groups of compositions and placement frequencies
+    df_list = []
 
-for f in glob.glob(os.path.join(PATH_GDRIVE_JSON_DIR, '*.json')):
-    with open(f, 'r') as file:
-        match_data = json.load(file)
-        alt_path = PATH_GDRIVE_JSON_DIR[:-1] + '\\'
-        gameid = f.replace(alt_path,"")
-        gameid = gameid.replace('.json',"")
-        processed_data = processMatchJson(match_data, gameid)
-        df_list.append(processed_data)
+    for f in glob.glob(os.path.join(PATH_GDRIVE_JSON_DIR, '*.json')):
+        with open(f, 'r') as file:
+            match_data = json.load(file)
+            alt_path = PATH_GDRIVE_JSON_DIR[:-1] + '\\'
+            gameid = f.replace(alt_path,"")
+            gameid = gameid.replace('.json',"")
+            processed_data = processMatchJson(match_data, gameid)
+            df_list.append(processed_data)
 
-final_df = pd.concat(df_list, ignore_index = True, sort = False)
+    final_df = pd.concat(df_list, ignore_index = True, sort = False)
 
-final_df.to_csv(PATH_GDRIVE_MAIN_DIR + 'compositions_data.csv', index = False)
+    final_df.to_pickle(f'{PATH_GDRIVE_MAIN_DIR}compositions_data.pkl')

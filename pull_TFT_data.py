@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 from config import PATH_GDRIVE_MAIN_DIR, PATH_GDRIVE_JSON_DIR
 
-patch_date = datetime(2020, 4, 28) # TODO: FILTER BY GAME VERSION INSTEAD OF DATE (different regions have patches hit at different times)
+patch_date = datetime(2020, 6, 11) # TODO: FILTER BY GAME VERSION INSTEAD OF DATE (different regions have patches hit at different times)
 API_KEY = os.environ.get("API_KEY")
 API_KEY_SUFFIX = '?api_key=' + API_KEY
 
@@ -95,8 +95,8 @@ fail_count = 0
 match_ids = []
 for platform_key, platform_link in PLATFORM_DICT.items():
     #Ad Hoc way to skip finished regions while the script is still crashing
-    if platform_key != "NA1":
-        continue
+    #if platform_key != "NA1":
+    #    continue
     if platform_key in AMERICAS_PLATFORMS:
         region = 'AMERICAS'
     elif platform_key in ASIA_PLATFORMS:
@@ -125,7 +125,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
         fail_count = 0
         tier_dict = tier_response.json()
         tier_dict_entries = tier_dict['entries']
-        #Get every PUUID for every summonerID
+        # Get every PUUID for every summonerID
         for entry in tier_dict['entries']:
             summonerID = entry['summonerId']
             summoner_prefix = tft_summoner_dict['Summoner ID'].format(summonerID)
@@ -148,11 +148,12 @@ for platform_key, platform_link in PLATFORM_DICT.items():
             fail_count = 0
             summoner_dict = summoner_response.json()
             puuid = summoner_dict['puuid']
-            #Get every match ID from PUUID - gotta use regional routing values
+            # Get every match ID from PUUID - gotta use regional routing values
             region_link = REGIONAL_DICT[region]
             matches_prefix = tft_match_dict['Matches from PUUID'].format(puuid)
             print('API Match List call: https://' + region_link + matches_prefix + API_KEY_SUFFIX)
-            match_response = requests.get('https://' + region_link + matches_prefix + API_KEY_SUFFIX)
+            # Get last 1000 games
+            match_response = requests.get('https://' + region_link + matches_prefix + "?count=1000" + API_KEY_SUFFIX)
             while match_response.status_code == 429:
                 fail_count += 1
                 if fail_count >= 5:
@@ -160,7 +161,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 wait_time = float(match_response.headers['Retry-After'])
                 print("WARNING: Rate Limit Exceeded...retrying request after {} seconds".format(wait_time))
                 time.sleep(wait_time)
-                match_response = requests.get('https://' + region_link + matches_prefix + '?count=100&api_key=' + API_KEY)
+                match_response = requests.get('https://' + region_link + matches_prefix + API_KEY_SUFFIX)
             code_response = processReturnCodes(match_response.status_code)
             if not code_response:
                 fail_count += 1
@@ -172,7 +173,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
             match_list = [i for i in match_list if i not in existing_match_ids]
             if not match_list:
                 continue
-            #Run through match ids and get details
+            # Run through match ids and get details
             for match_id in match_list:
                 match_id_prefix = tft_match_dict['Match ID Details'].format(match_id)
                 match_detail_response = requests.get("https://" + region_link + match_id_prefix + API_KEY_SUFFIX)
@@ -192,17 +193,18 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                     continue
                 fail_count = 0
                 match_details = match_detail_response.json()
-                # Matches are list starting with most recent - if match date is before the patch, then can skip the rest
+
+                # Matches are list starting with most recent - if match date is before the cutoff patch date, then can skip the rest
                 game_dtime = datetime.fromtimestamp(match_details['info']['game_datetime']/1000.0)
-                if game_dtime < patch_date:
-                    print("Reached the last game for the newest patch for summoner {}".format(summoner_dict['name']))
+                if game_dtime <= patch_date:
+                    print("Reached the last game for Set 3.5 for summoner {}".format(summoner_dict['name']))
                     break
                 #Add relevant metadata to JSON: summoner name, id, patch, etc
                 match_details["metadata"]['summoner_id'] = summonerID
                 match_details["metadata"]['puuid'] = puuid
                 match_details["metadata"]['summoner_name']  = summoner_dict['name']
                 #Save match data as its own JSON file
-                json_file_name = PATH_GDRIVE_JSON_DIR + "10.9/" + match_id + '.json'
+                json_file_name = PATH_GDRIVE_JSON_DIR + "Set3/" + match_id + '.json'
                 with open(json_file_name, 'w') as fp:
                     json.dump(match_details, fp)
                 print("Saved {} successfully.".format(json_file_name))
