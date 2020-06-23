@@ -54,8 +54,10 @@ tft_summoner_dict = {'Account ID': tft_summoner_prefix + 'by-account/{}',
                     'PUUID':tft_summoner_prefix + 'by-puuid/{}',
                     'Summoner ID':tft_summoner_prefix + '{}'}
 
-existing_match_ids = pd.read_csv(PATH_GDRIVE_MAIN_DIR + 'match_ids.csv')['Match IDs'].tolist()
+with open(f"{PATH_GDRIVE_MAIN_DIR}match_ids.txt") as f:
+    existing_match_ids = [line.strip() for line in f]
 
+match_id_file = open(f"{PATH_GDRIVE_MAIN_DIR}match_ids.txt", "a+")
 #Keep in mind: Rate limits - make sure to count and set sleep pauses if necessary
 def processReturnCodes(code):
     if code == 200:
@@ -124,7 +126,6 @@ for platform_key, platform_link in PLATFORM_DICT.items():
             pass
         fail_count = 0
         tier_dict = tier_response.json()
-        tier_dict_entries = tier_dict['entries']
         # Get every PUUID for every summonerID
         for entry in tier_dict['entries']:
             summonerID = entry['summonerId']
@@ -153,7 +154,7 @@ for platform_key, platform_link in PLATFORM_DICT.items():
             matches_prefix = tft_match_dict['Matches from PUUID'].format(puuid)
             print('API Match List call: https://' + region_link + matches_prefix + API_KEY_SUFFIX)
             # Get last 1000 games
-            match_response = requests.get('https://' + region_link + matches_prefix + "?count=1000" + API_KEY_SUFFIX)
+            match_response = requests.get('https://' + region_link + matches_prefix + API_KEY_SUFFIX + "&?count=1000" )
             while match_response.status_code == 429:
                 fail_count += 1
                 if fail_count >= 5:
@@ -204,11 +205,13 @@ for platform_key, platform_link in PLATFORM_DICT.items():
                 match_details["metadata"]['puuid'] = puuid
                 match_details["metadata"]['summoner_name']  = summoner_dict['name']
                 #Save match data as its own JSON file
-                json_file_name = PATH_GDRIVE_JSON_DIR + "Set3/" + match_id + '.json'
+                json_file_name = PATH_GDRIVE_JSON_DIR + "Set3.5/" + match_id + '.json'
                 with open(json_file_name, 'w') as fp:
                     json.dump(match_details, fp)
                 print("Saved {} successfully.".format(json_file_name))
-                match_ids.append(match_id)
-            temp_match_df = pd.DataFrame({'Match IDs':match_ids})
-            temp_match_df.to_csv(PATH_GDRIVE_MAIN_DIR + 'match_ids.csv', index = False, header=False, mode = 'a')
+                match_id_file.write(f"{match_id}\n")
+            #temp_match_df = pd.DataFrame({'Match IDs':match_ids})
+            #temp_match_df.to_csv(PATH_GDRIVE_MAIN_DIR + 'match_ids.csv', index = False, header=False, mode = 'a')
     print("Region {} completed.".format(platform_key))
+
+match_id_file.close()

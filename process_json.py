@@ -51,15 +51,15 @@ if __name__ == "__main__":
     # Process JSON match data and create groups of compositions and placement frequencies
     df_list = []
 
-    for f in glob.glob(os.path.join(PATH_GDRIVE_JSON_DIR, '*.json')):
+    for f in glob.glob(os.path.join(PATH_GDRIVE_JSON_DIR, '10.9/*.json')):
         with open(f, 'r') as file:
             match_data = json.load(file)
-            alt_path = PATH_GDRIVE_JSON_DIR[:-1] + '\\'
-            gameid = f.replace(alt_path,"")
+            extended_path = PATH_GDRIVE_JSON_DIR + '10.9\\'
+            gameid = f.replace(extended_path,"")
             gameid = gameid.replace('.json',"")
             processed_data = processMatchJson(match_data, gameid)
             df_list.append(processed_data)
 
     final_df = pd.concat(df_list, ignore_index = True, sort = False)
 
-    final_df.to_pickle(f'{PATH_GDRIVE_MAIN_DIR}compositions_data.pkl')
+    final_df.to_pickle(f'{PATH_GDRIVE_MAIN_DIR}10.9_compositions_data.pkl')
