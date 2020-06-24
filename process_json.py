@@ -5,6 +5,7 @@ Our output file will be compositions_data.pickle in order to preserve object inf
 
 """
 import os
+import sys
 import glob
 import pandas as pd
 import requests
@@ -26,10 +27,10 @@ def processMatchJson(match_data, gameid):
         #TODO: ASSIGN ITEMS TO CHAMPIONS
         puuid = partic['puuid']
         place = partic['placement']
-        traitlist = sorted([t['name']+str(t['tier_current']) for t in partic['traits'] if t['tier_current'] > 0])
+        traitlist = sorted([t['name'].replace("Set3_", "") +str(t['tier_current']) for t in partic['traits'] if t['tier_current'] > 0])
 
         # Units will be list of dictionaries: [{name, item, tier}, ...]
-        unit_names = [unit['name'] if unit['name'] != '' else unit['character_id'].replace("TFT2_", "") for unit in partic['units']]
+        unit_names = [unit['name'] if unit['name'] != '' else unit['character_id'].replace("TFT3_", "") for unit in partic['units']]
         if len(unit_names) == 0:
             unit_dict = []
         else:
@@ -49,12 +50,12 @@ def processMatchJson(match_data, gameid):
 
 if __name__ == "__main__":
     # Process JSON match data and create groups of compositions and placement frequencies
+    set_num = sys.argv[1]
     df_list = []
-
-    for f in glob.glob(os.path.join(PATH_GDRIVE_JSON_DIR, '10.9/*.json')):
+    for f in glob.glob(os.path.join(PATH_GDRIVE_JSON_DIR, f'{set_num}/*.json')):
         with open(f, 'r') as file:
             match_data = json.load(file)
-            extended_path = PATH_GDRIVE_JSON_DIR + '10.9\\'
+            extended_path = PATH_GDRIVE_JSON_DIR + f'{set_num}\\'
             gameid = f.replace(extended_path,"")
             gameid = gameid.replace('.json',"")
             processed_data = processMatchJson(match_data, gameid)
@@ -62,4 +63,4 @@ if __name__ == "__main__":
 
     final_df = pd.concat(df_list, ignore_index = True, sort = False)
 
-    final_df.to_pickle(f'{PATH_GDRIVE_MAIN_DIR}10.9_compositions_data.pkl')
+    final_df.to_pickle(f'{PATH_GDRIVE_MAIN_DIR}{set_num}_compositions_data.pkl')

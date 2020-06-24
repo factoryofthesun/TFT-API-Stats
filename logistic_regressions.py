@@ -35,9 +35,13 @@ GAME_VERSION = 10.2
 
 # Split train and test
 
-# Basic dummy models
+# == Basic dummy models ==
 
-# Intermediate model
+# Dummy model 1: dummies for every unit, trait, and item
 
-# Maxed Dimension Model
+# Dummy model 2: dummies for every unit, trait, item, and unit:item interactions (might need GPU for this)
+
+# == Intermediate models ==
+
+# == Maxed Dimension Model ==
 # Consider: paring down dimensionality by using the synergy aggregation from the Dota2 papers

@@ -9,6 +9,7 @@ import requests
 from datetime import datetime
 import json
 import time
+import random
 from datetime import datetime
 from config import PATH_GDRIVE_MAIN_DIR, PATH_GDRIVE_JSON_DIR
 
@@ -95,7 +96,8 @@ tiers = ['Challenger', 'Grandmaster', 'Master']
 
 fail_count = 0
 match_ids = []
-for platform_key, platform_link in PLATFORM_DICT.items():
+# Randomize the loop so we aren't just pulling brazil data everytime
+for platform_key, platform_link in random.sample(PLATFORM_DICT.items(), len(PLATFORM_DICT)):
     #Ad Hoc way to skip finished regions while the script is still crashing
     #if platform_key != "NA1":
     #    continue
